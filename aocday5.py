@@ -22,6 +22,8 @@
 
 # I could probably update some of the variables to be dynamic but for now just going to put what I got to get this to work.
 
+# Made an edit so that the output gives me the answer, versus me looking at the output and typing in the answer.
+
 def lifts(towers,x,y,z):
     oldTower = towers[y]
     newTower = towers[z]
@@ -45,6 +47,7 @@ def boxes():
         towers=['','','','','','','','','']
         lines = boxes.readlines()
         x = 0
+        answer=[]
         for line in lines[7::-1]:
             for character in line[1::4]:
                 towers[x] = towers[x] + character
@@ -60,6 +63,8 @@ def boxes():
             y = int(numbers[1]) - 1
             z = int(numbers[2]) - 1
             lifts(towers,x,y,z)
-        return towers
+        for tower in towers:
+            answer.append(tower[::-1][0])
+        return answer
     
 boxes()
