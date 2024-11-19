@@ -72,6 +72,7 @@ document.addEventListener('DOMContentLoaded', async function (event) {
             this.store[key] = value;
         }
     }
+
     var totalSteps = new DefaultDict(() => 1000000);
     totalSteps.set(startCoords, 0)
     var queue = [startCoords]
@@ -80,7 +81,11 @@ document.addEventListener('DOMContentLoaded', async function (event) {
             let currentLocation = queue.shift();
             if (currentLocation[0] === endCoords[0] && currentLocation[1] === endCoords[1]) {
                 console.log(totalSteps.get(currentLocation))
-                console.log(totalSteps)
+                let answer = document.createElement("p")
+                answer.className = "jozParagraph"
+                answer.textContent = totalSteps.get(currentLocation)
+                let jozDiv = document.querySelector('.jozDiv')
+                jozDiv.appendChild(answer)
             }
             for (let direction of directions) {
                 let nextStep = currentLocation.map((i, index) => i + Number(direction[index]))
@@ -98,4 +103,56 @@ document.addEventListener('DOMContentLoaded', async function (event) {
         }
     }
     breadthFirstSearch(puzzleGrid, queue)
+    var backwardsQueue = [endCoords]
+    var pathBack = new Set()
+    pathBack.add((JSON.stringify(endCoords)))
+    function findPathBack(stepsToEndCoords, endCoords) {
+        while (backwardsQueue.length > 0) {
+            let currentLocation = backwardsQueue.shift()
+            for (let direction of directions) {
+                let previousStep = currentLocation.map((i, index) => i + Number(direction[index]))
+                if (previousStep[0] > -1 && previousStep[0] < numberOfColumns && previousStep[1] > -1 && previousStep[1] < numberOfRows) {
+                    let previousPiece = puzzleGrid[previousStep[1]][previousStep[0]]
+                    if (puzzleGrid[currentLocation[1]][currentLocation[0]] - previousPiece <= 1) {
+                        if (totalSteps.get(currentLocation) === totalSteps.get(previousStep) + 1) {
+                            if (!pathBack.has(JSON.stringify(previousStep))) {
+                                backwardsQueue.push(previousStep)
+                                pathBack.add((JSON.stringify(previousStep)))
+                            }
+                        }
+                    }
+
+                }
+            }
+        }
+        let jozDiv = document.querySelector(".jozDiv")
+        let newPuzzle = document.createElement("p")
+        for (let i = 0; i < numberOfRows; i++) {
+            let currentRow = document.createElement("p")
+            for (let j = 0; j < numberOfColumns; j++) {
+                currentCoordinates = []
+                currentCoordinates.push(j, i)
+                if (pathBack.has(JSON.stringify(currentCoordinates))) {
+                    let newColor = document.createElement("span");
+                    newColor.textContent = puzzleSplit[i][j]
+                    newColor.style.color = "white"
+                    newColor.style.textAlign = "justify"
+                    currentRow.append(newColor)
+                } else {
+                    let currentLetter = document.createElement("span");
+                    currentLetter.textContent = puzzleSplit[i][j]
+                    currentLetter.style.color = "black"
+                    currentLetter.style.textAlign = "justify"
+                    currentRow.append(currentLetter);
+                }
+                newPuzzle.style.textAlign = "justify"
+                newPuzzle.append(currentRow)
+            }
+        }
+        let oldPuzzle = document.querySelector(".jozPuzzle")
+        console.log(oldPuzzle)
+        jozDiv.removeChild(oldPuzzle)
+        jozDiv.appendChild(newPuzzle)
+    }
+    findPathBack(totalSteps.get(endCoords), backwardsQueue)
 })
